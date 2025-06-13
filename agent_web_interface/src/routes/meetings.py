@@ -3,6 +3,7 @@ Meeting management API routes.
 """
 
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required
 from src.models.user import db
 from src.models.agent_models import Meeting, Agent
 from datetime import datetime, timedelta
@@ -13,6 +14,7 @@ meeting_bp = Blueprint('meeting', __name__)
 
 
 @meeting_bp.route('/meetings', methods=['GET'])
+@jwt_required()
 def get_meetings():
     """Get all meetings with optional filtering."""
     try:
@@ -66,6 +68,7 @@ def get_meetings():
 
 
 @meeting_bp.route('/meetings', methods=['POST'])
+@jwt_required()
 def create_meeting():
     """Create a new meeting."""
     try:
@@ -133,6 +136,7 @@ def create_meeting():
 
 
 @meeting_bp.route('/meetings/<int:meeting_id>', methods=['GET'])
+@jwt_required()
 def get_meeting(meeting_id):
     """Get a specific meeting."""
     try:
@@ -149,6 +153,7 @@ def get_meeting(meeting_id):
 
 
 @meeting_bp.route('/meetings/<int:meeting_id>', methods=['PUT'])
+@jwt_required()
 def update_meeting(meeting_id):
     """Update a meeting."""
     try:
@@ -209,6 +214,7 @@ def update_meeting(meeting_id):
 
 
 @meeting_bp.route('/meetings/<int:meeting_id>', methods=['DELETE'])
+@jwt_required()
 def delete_meeting(meeting_id):
     """Delete a meeting."""
     try:
@@ -238,6 +244,7 @@ def delete_meeting(meeting_id):
 
 
 @meeting_bp.route('/meetings/<int:meeting_id>/start', methods=['POST'])
+@jwt_required()
 def start_meeting(meeting_id):
     """Start a meeting."""
     try:
@@ -269,6 +276,7 @@ def start_meeting(meeting_id):
 
 
 @meeting_bp.route('/meetings/<int:meeting_id>/end', methods=['POST'])
+@jwt_required()
 def end_meeting(meeting_id):
     """End a meeting."""
     try:
@@ -313,6 +321,7 @@ def end_meeting(meeting_id):
 
 
 @meeting_bp.route('/meetings/<int:meeting_id>/transcript', methods=['GET'])
+@jwt_required()
 def get_meeting_transcript(meeting_id):
     """Get meeting transcript."""
     try:
@@ -336,6 +345,7 @@ def get_meeting_transcript(meeting_id):
 
 
 @meeting_bp.route('/meetings/<int:meeting_id>/transcript', methods=['POST'])
+@jwt_required()
 def update_meeting_transcript(meeting_id):
     """Update meeting transcript."""
     try:
@@ -370,6 +380,7 @@ def update_meeting_transcript(meeting_id):
 
 
 @meeting_bp.route('/meetings/stats', methods=['GET'])
+@jwt_required()
 def get_meeting_stats():
     """Get meeting statistics."""
     try:
@@ -412,6 +423,7 @@ def get_meeting_stats():
 
 
 @meeting_bp.route('/meetings/upcoming', methods=['GET'])
+@jwt_required()
 def get_upcoming_meetings():
     """Get upcoming meetings."""
     try:

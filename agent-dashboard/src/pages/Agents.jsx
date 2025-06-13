@@ -22,7 +22,7 @@ import {
   FileText
 } from 'lucide-react'
 
-import { API_BASE_URL } from '../utils/api'
+import { fetchWithAuth } from '../utils/api' // Updated import
 
 export function Agents() {
   const [agents, setAgents] = useState([])
@@ -53,7 +53,11 @@ export function Agents() {
 
   const fetchAgents = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/agents`)
+      const response = await fetchWithAuth(`/agents`)
+      if (!response.ok) {
+        console.error("Failed to fetch agents", response.status);
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setAgents(data.data)
@@ -67,7 +71,11 @@ export function Agents() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/agents/stats')
+      const response = await fetchWithAuth(`/agents/stats`)
+      if (!response.ok) {
+        console.error("Failed to fetch stats", response.status);
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setStats(data.data)
@@ -79,13 +87,16 @@ export function Agents() {
 
   const handleCreateAgent = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/agents', {
+      const response = await fetchWithAuth(`/agents`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(formData),
       })
+      if (!response.ok) {
+        console.error("Failed to create agent", response.status);
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.error || errorData.msg || 'Failed to create agent');
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setAgents([...agents, data.data])
@@ -93,7 +104,7 @@ export function Agents() {
         resetForm()
         fetchStats()
       } else {
-        alert(data.error)
+        alert(data.error || data.msg)
       }
     } catch (error) {
       console.error('Error creating agent:', error)
@@ -102,13 +113,16 @@ export function Agents() {
 
   const handleUpdateAgent = async (agentId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/agents/${agentId}`, {
+      const response = await fetchWithAuth(`/agents/${agentId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(formData),
       })
+      if (!response.ok) {
+        console.error("Failed to update agent", response.status);
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.error || errorData.msg || 'Failed to update agent');
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setAgents(agents.map(agent => 
@@ -118,7 +132,7 @@ export function Agents() {
         resetForm()
         fetchStats()
       } else {
-        alert(data.error)
+        alert(data.error || data.msg)
       }
     } catch (error) {
       console.error('Error updating agent:', error)
@@ -129,15 +143,21 @@ export function Agents() {
     if (!confirm('Are you sure you want to delete this agent?')) return
     
     try {
-      const response = await fetch(`http://localhost:5000/api/agents/${agentId}`, {
+      const response = await fetchWithAuth(`/agents/${agentId}`, {
         method: 'DELETE',
       })
+      if (!response.ok) {
+        console.error("Failed to delete agent", response.status);
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.error || errorData.msg || 'Failed to delete agent');
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setAgents(agents.filter(agent => agent.id !== agentId))
         fetchStats()
       } else {
-        alert(data.error)
+        alert(data.error || data.msg)
       }
     } catch (error) {
       console.error('Error deleting agent:', error)
@@ -146,9 +166,15 @@ export function Agents() {
 
   const handleToggleStatus = async (agentId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/agents/${agentId}/toggle`, {
+      const response = await fetchWithAuth(`/agents/${agentId}/toggle`, {
         method: 'POST',
       })
+      if (!response.ok) {
+        console.error("Failed to toggle agent status", response.status);
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.error || errorData.msg || 'Failed to toggle status');
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setAgents(agents.map(agent => 
@@ -156,7 +182,7 @@ export function Agents() {
         ))
         fetchStats()
       } else {
-        alert(data.error)
+        alert(data.error || data.msg)
       }
     } catch (error) {
       console.error('Error toggling agent status:', error)

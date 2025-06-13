@@ -3,6 +3,7 @@ Agent management API routes.
 """
 
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required
 from src.models.user import db
 from src.models.agent_models import Agent
 import json
@@ -11,6 +12,7 @@ agent_bp = Blueprint('agent', __name__)
 
 
 @agent_bp.route('/agents', methods=['GET'])
+@jwt_required()
 def get_agents():
     """Get all agents."""
     try:
@@ -27,6 +29,7 @@ def get_agents():
 
 
 @agent_bp.route('/agents', methods=['POST'])
+@jwt_required()
 def create_agent():
     """Create a new agent."""
     try:
@@ -80,6 +83,7 @@ def create_agent():
 
 
 @agent_bp.route('/agents/<int:agent_id>', methods=['GET'])
+@jwt_required()
 def get_agent(agent_id):
     """Get a specific agent."""
     try:
@@ -96,6 +100,7 @@ def get_agent(agent_id):
 
 
 @agent_bp.route('/agents/<int:agent_id>', methods=['PUT'])
+@jwt_required()
 def update_agent(agent_id):
     """Update an agent."""
     try:
@@ -148,6 +153,7 @@ def update_agent(agent_id):
 
 
 @agent_bp.route('/agents/<int:agent_id>', methods=['DELETE'])
+@jwt_required()
 def delete_agent(agent_id):
     """Delete an agent."""
     try:
@@ -170,6 +176,7 @@ def delete_agent(agent_id):
 
 
 @agent_bp.route('/agents/<int:agent_id>/toggle', methods=['POST'])
+@jwt_required()
 def toggle_agent_status(agent_id):
     """Toggle agent active status."""
     try:
@@ -193,6 +200,7 @@ def toggle_agent_status(agent_id):
 
 
 @agent_bp.route('/agents/search', methods=['GET'])
+@jwt_required()
 def search_agents():
     """Search agents by various criteria."""
     try:
@@ -243,6 +251,7 @@ def search_agents():
 
 
 @agent_bp.route('/agents/stats', methods=['GET'])
+@jwt_required()
 def get_agent_stats():
     """Get agent statistics."""
     try:
@@ -284,6 +293,7 @@ def get_agent_stats():
 
 
 @agent_bp.route('/agents/bulk', methods=['POST'])
+@jwt_required()
 def bulk_create_agents():
     """Create multiple agents from a list."""
     try:

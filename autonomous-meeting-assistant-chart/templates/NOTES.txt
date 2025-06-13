@@ -20,3 +20,21 @@
   echo "Visit http://127.0.0.1:8080 to use your application"
   kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
 {{- end }}
+
+{{- if .Values.postgresql.enabled }}
+To connect to your PostgreSQL database:
+1. Get the PostgreSQL credentials:
+   Username: {{ .Values.postgresql.auth.username }}
+   Password: {{ .Values.postgresql.auth.password }}
+   Database: {{ .Values.postgresql.auth.database }}
+
+2. Get the PostgreSQL service name and port:
+   Service: {{ .Release.Name }}-postgresql
+   Port: 5432
+
+3. You can forward the PostgreSQL port to your local machine:
+   kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ .Release.Name }}-postgresql 5432:5432
+
+   Then connect using psql or any PostgreSQL client:
+   psql -h 127.0.0.1 -p 5432 -U {{ .Values.postgresql.auth.username }} -d {{ .Values.postgresql.auth.database }}
+{{- end }}

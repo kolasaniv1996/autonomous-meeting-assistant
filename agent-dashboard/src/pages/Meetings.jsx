@@ -27,6 +27,7 @@ import {
   FileText,
   Download
 } from 'lucide-react'
+import { fetchWithAuth } from '../utils/api' // Updated import
 
 export function Meetings() {
   const [meetings, setMeetings] = useState([])
@@ -60,7 +61,12 @@ export function Meetings() {
 
   const fetchMeetings = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/meetings')
+      const response = await fetchWithAuth(`/meetings`)
+      if (!response.ok) {
+        console.error("Failed to fetch meetings", response.status);
+        // setLoading(false) could be here or in a finally block depending on desired behavior
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setMeetings(data.data)
@@ -74,7 +80,11 @@ export function Meetings() {
 
   const fetchAgents = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/agents')
+      const response = await fetchWithAuth(`/agents`) // Assuming agents also need auth
+      if (!response.ok) {
+        console.error("Failed to fetch agents", response.status);
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setAgents(data.data.filter(agent => agent.is_active))
@@ -86,7 +96,11 @@ export function Meetings() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/meetings/stats')
+      const response = await fetchWithAuth(`/meetings/stats`)
+      if (!response.ok) {
+        console.error("Failed to fetch stats", response.status);
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setStats(data.data)
@@ -98,13 +112,20 @@ export function Meetings() {
 
   const handleCreateMeeting = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/meetings', {
+      const dataToSend = {
+        ...formData,
+        scheduled_start: new Date(formData.scheduled_start).toISOString(),
+      };
+      const response = await fetchWithAuth(`/meetings`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSend),
       })
+      if (!response.ok) {
+        console.error("Failed to create meeting", response.status);
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.error || errorData.msg || 'Failed to create meeting');
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setMeetings([data.data, ...meetings])
@@ -112,7 +133,7 @@ export function Meetings() {
         resetForm()
         fetchStats()
       } else {
-        alert(data.error)
+        alert(data.error || data.msg)
       }
     } catch (error) {
       console.error('Error creating meeting:', error)
@@ -121,13 +142,20 @@ export function Meetings() {
 
   const handleUpdateMeeting = async (meetingId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/meetings/${meetingId}`, {
+      const dataToSend = {
+        ...formData,
+        scheduled_start: new Date(formData.scheduled_start).toISOString(),
+      };
+      const response = await fetchWithAuth(`/meetings/${meetingId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSend),
       })
+      if (!response.ok) {
+        console.error("Failed to update meeting", response.status);
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.error || errorData.msg || 'Failed to update meeting');
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setMeetings(meetings.map(meeting => 
@@ -137,7 +165,7 @@ export function Meetings() {
         resetForm()
         fetchStats()
       } else {
-        alert(data.error)
+        alert(data.error || data.msg)
       }
     } catch (error) {
       console.error('Error updating meeting:', error)
@@ -148,15 +176,21 @@ export function Meetings() {
     if (!confirm('Are you sure you want to delete this meeting?')) return
     
     try {
-      const response = await fetch(`http://localhost:5000/api/meetings/${meetingId}`, {
+      const response = await fetchWithAuth(`/meetings/${meetingId}`, {
         method: 'DELETE',
       })
+      if (!response.ok) {
+        console.error("Failed to delete meeting", response.status);
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.error || errorData.msg || 'Failed to delete meeting');
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setMeetings(meetings.filter(meeting => meeting.id !== meetingId))
         fetchStats()
       } else {
-        alert(data.error)
+        alert(data.error || data.msg)
       }
     } catch (error) {
       console.error('Error deleting meeting:', error)
@@ -165,9 +199,15 @@ export function Meetings() {
 
   const handleStartMeeting = async (meetingId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/meetings/${meetingId}/start`, {
+      const response = await fetchWithAuth(`/meetings/${meetingId}/start`, {
         method: 'POST',
       })
+      if (!response.ok) {
+        console.error("Failed to start meeting", response.status);
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.error || errorData.msg || 'Failed to start meeting');
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setMeetings(meetings.map(meeting => 
@@ -175,7 +215,7 @@ export function Meetings() {
         ))
         fetchStats()
       } else {
-        alert(data.error)
+        alert(data.error || data.msg)
       }
     } catch (error) {
       console.error('Error starting meeting:', error)
@@ -184,16 +224,19 @@ export function Meetings() {
 
   const handleEndMeeting = async (meetingId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/meetings/${meetingId}/end`, {
+      const response = await fetchWithAuth(`/meetings/${meetingId}/end`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           summary: 'Meeting completed successfully',
           action_items: []
         }),
       })
+      if (!response.ok) {
+        console.error("Failed to end meeting", response.status);
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.error || errorData.msg || 'Failed to end meeting');
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setMeetings(meetings.map(meeting => 
@@ -201,7 +244,7 @@ export function Meetings() {
         ))
         fetchStats()
       } else {
-        alert(data.error)
+        alert(data.error || data.msg)
       }
     } catch (error) {
       console.error('Error ending meeting:', error)
@@ -210,7 +253,11 @@ export function Meetings() {
 
   const fetchTranscript = async (meetingId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/meetings/${meetingId}/transcript`)
+      const response = await fetchWithAuth(`/meetings/${meetingId}/transcript`)
+      if (!response.ok) {
+        console.error("Failed to fetch transcript", response.status);
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setSelectedMeeting(data.data)

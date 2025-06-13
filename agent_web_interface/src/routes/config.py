@@ -3,6 +3,7 @@ Configuration management API routes.
 """
 
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required
 from src.models.user import db
 from src.models.agent_models import Configuration
 import json
@@ -11,6 +12,7 @@ config_bp = Blueprint('config', __name__)
 
 
 @config_bp.route('/configurations', methods=['GET'])
+@jwt_required()
 def get_configurations():
     """Get all configurations."""
     try:
@@ -27,6 +29,7 @@ def get_configurations():
 
 
 @config_bp.route('/configurations', methods=['POST'])
+@jwt_required()
 def create_configuration():
     """Create a new configuration."""
     try:
@@ -77,6 +80,7 @@ def create_configuration():
 
 
 @config_bp.route('/configurations/<int:config_id>', methods=['GET'])
+@jwt_required()
 def get_configuration(config_id):
     """Get a specific configuration."""
     try:
@@ -93,6 +97,7 @@ def get_configuration(config_id):
 
 
 @config_bp.route('/configurations/<int:config_id>', methods=['PUT'])
+@jwt_required()
 def update_configuration(config_id):
     """Update a configuration."""
     try:
@@ -142,6 +147,7 @@ def update_configuration(config_id):
 
 
 @config_bp.route('/configurations/<int:config_id>', methods=['DELETE'])
+@jwt_required()
 def delete_configuration(config_id):
     """Delete a configuration."""
     try:
@@ -171,6 +177,7 @@ def delete_configuration(config_id):
 
 
 @config_bp.route('/configurations/active', methods=['GET'])
+@jwt_required()
 def get_active_configuration():
     """Get the currently active configuration."""
     try:
@@ -193,6 +200,7 @@ def get_active_configuration():
 
 
 @config_bp.route('/configurations/validate', methods=['POST'])
+@jwt_required()
 def validate_configuration():
     """Validate a configuration structure."""
     try:
@@ -250,6 +258,7 @@ def validate_configuration():
 
 
 @config_bp.route('/configurations/template', methods=['GET'])
+@jwt_required()
 def get_configuration_template():
     """Get a configuration template."""
     try:
