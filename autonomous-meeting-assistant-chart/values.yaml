@@ -4,8 +4,24 @@
 
 replicaCount: 1
 
+postgresql:
+  enabled: true
+  auth:
+    username: "youruser"
+    password: "yourpassword"
+    database: "agentframeworkdb"
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+
 backend:
   replicaCount: 1
+  dbHost: "{{ .Release.Name }}-postgresql"
+  dbPort: "5432"
+  dbUser: "youruser" # Should ideally use .Values.postgresql.auth.username, but direct usage for simplicity here
+  dbPassword: "yourpassword" # Should ideally use .Values.postgresql.auth.password
+  dbName: "agentframeworkdb" # Should ideally use .Values.postgresql.auth.database
   image:
     repository: vivekkolasani1996/autonomous-meeting-assistant-backend
     tag: latest

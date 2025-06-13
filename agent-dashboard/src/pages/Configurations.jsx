@@ -21,8 +21,7 @@ import {
   Cloud,
   Mic
 } from 'lucide-react'
-
-const API_BASE_URL = 'http://localhost:5001/api'
+import { fetchWithAuth } from '../../utils/api' // Updated import
 
 export function Configurations() {
   const [configurations, setConfigurations] = useState([])
@@ -43,7 +42,15 @@ export function Configurations() {
 
   const fetchConfigurations = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/configurations`)
+      const response = await fetchWithAuth(`/configurations`)
+      if (!response.ok) {
+        // Handle non-OK responses, e.g. by logging out or showing an error
+        console.error("Failed to fetch configurations", response.status)
+        if (response.status === 401) {
+          // Optionally, trigger logout from AuthContext here if possible
+        }
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setConfigurations(data.data)
@@ -57,7 +64,11 @@ export function Configurations() {
 
   const fetchTemplate = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/configurations/template')
+      const response = await fetchWithAuth(`/configurations/template`)
+      if (!response.ok) {
+        console.error("Failed to fetch template", response.status)
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setTemplate(data.data)
@@ -69,13 +80,16 @@ export function Configurations() {
 
   const handleCreateConfig = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/configurations`, {
+      const response = await fetchWithAuth(`/configurations`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(formData),
       })
+      if (!response.ok) {
+        console.error("Failed to create configuration", response.status)
+        const errorData = await response.json().catch(() => ({}))
+        alert(errorData.error || errorData.msg || 'Failed to create configuration');
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setConfigurations([...configurations, data.data])
@@ -91,13 +105,16 @@ export function Configurations() {
 
   const handleUpdateConfig = async (configId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/configurations/${configId}`, {
+      const response = await fetchWithAuth(`/configurations/${configId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(formData),
       })
+      if (!response.ok) {
+        console.error("Failed to update configuration", response.status)
+        const errorData = await response.json().catch(() => ({}))
+        alert(errorData.error || errorData.msg || 'Failed to update configuration');
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setConfigurations(configurations.map(config => 
@@ -106,7 +123,7 @@ export function Configurations() {
         setEditingConfig(null)
         setFormData({ name: '', description: '', config_data: {} })
       } else {
-        alert(data.error)
+        alert(data.error || data.msg)
       }
     } catch (error) {
       console.error('Error updating configuration:', error)
@@ -117,14 +134,20 @@ export function Configurations() {
     if (!confirm('Are you sure you want to delete this configuration?')) return
     
     try {
-      const response = await fetch(`${API_BASE_URL}/configurations/${configId}`, {
+      const response = await fetchWithAuth(`/configurations/${configId}`, {
         method: 'DELETE',
       })
+      if (!response.ok) {
+        console.error("Failed to delete configuration", response.status)
+        const errorData = await response.json().catch(() => ({}))
+        alert(errorData.error || errorData.msg || 'Failed to delete configuration');
+        return;
+      }
       const data = await response.json()
       if (data.success) {
         setConfigurations(configurations.filter(config => config.id !== configId))
       } else {
-        alert(data.error)
+        alert(data.error || data.msg)
       }
     } catch (error) {
       console.error('Error deleting configuration:', error)
@@ -133,20 +156,29 @@ export function Configurations() {
 
   const handleActivateConfig = async (configId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/configurations/${configId}/activate`, {method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ is_active: true }),
-      })
-      const data = await response.json()
-      if (data.success) {
-        setConfigurations(configurations.map(config => ({
-          ...config,
-          is_active: config.id === configId
-        })))
+      // The backend PUT /configurations/:id updates the record, including is_active
+      // The backend ensures only one is active.
+      const response = await fetchWithAuth(`/configurations/${configId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ is_active: true }), // Send is_active: true to activate
+      });
+      if (!response.ok) {
+        console.error("Failed to activate configuration", response.status);
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.error || errorData.msg || 'Failed to activate configuration');
+        return;
+      }
+      const updatedConfig = await response.json();
+      if (updatedConfig.success) {
+        // Update local state: set the target true, others false
+        setConfigurations(prevConfigurations =>
+          prevConfigurations.map(config => ({
+            ...config,
+            is_active: config.id === configId,
+          }))
+        );
       } else {
-        alert(data.error)
+        alert(updatedConfig.error || updatedConfig.msg || "Error activating configuration");
       }
     } catch (error) {
       console.error('Error activating configuration:', error)
@@ -154,22 +186,24 @@ export function Configurations() {
   }
 
   const startEditing = (config) => {
-    setEditingConfig(config.id)
+    setEditingConfig(config.id);
     setFormData({
       name: config.name,
       description: config.description || '',
-      config_data: config.config_data
-    })
-  }
+      // Deep copy config_data, ensuring it's not null/undefined
+      config_data: config.config_data ? JSON.parse(JSON.stringify(config.config_data)) : {}
+    });
+  };
 
   const startCreating = () => {
-    setShowCreateForm(true)
+    setShowCreateForm(true);
+    // The template from backend is directly the config_data structure
     setFormData({
       name: '',
       description: '',
-      config_data: template || {}
-    })
-  }
+      config_data: template ? JSON.parse(JSON.stringify(template)) : {}
+    });
+  };
 
   const cancelEditing = () => {
     setEditingConfig(null)
@@ -264,16 +298,7 @@ export function Configurations() {
                     <Input
                       id="jira_url"
                       value={formData.config_data?.api_credentials?.jira_url || ''}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        config_data: {
-                          ...formData.config_data,
-                          api_credentials: {
-                            ...formData.config_data.api_credentials,
-                            jira_url: e.target.value
-                          }
-                        }
-                      })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, config_data: { ...prev.config_data, api_credentials: { ...prev.config_data?.api_credentials, jira_url: e.target.value } } }))}
                       placeholder="https://your-company.atlassian.net"
                     />
                   </div>
@@ -283,16 +308,7 @@ export function Configurations() {
                       id="jira_token"
                       type="password"
                       value={formData.config_data?.api_credentials?.jira_token || ''}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        config_data: {
-                          ...formData.config_data,
-                          api_credentials: {
-                            ...formData.config_data.api_credentials,
-                            jira_token: e.target.value
-                          }
-                        }
-                      })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, config_data: { ...prev.config_data, api_credentials: { ...prev.config_data?.api_credentials, jira_token: e.target.value } } }))}
                       placeholder="Your Jira API token"
                     />
                   </div>
@@ -302,16 +318,7 @@ export function Configurations() {
                       id="github_token"
                       type="password"
                       value={formData.config_data?.api_credentials?.github_token || ''}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        config_data: {
-                          ...formData.config_data,
-                          api_credentials: {
-                            ...formData.config_data.api_credentials,
-                            github_token: e.target.value
-                          }
-                        }
-                      })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, config_data: { ...prev.config_data, api_credentials: { ...prev.config_data?.api_credentials, github_token: e.target.value } } }))}
                       placeholder="Your GitHub personal access token"
                     />
                   </div>
@@ -321,16 +328,7 @@ export function Configurations() {
                       id="openai_key"
                       type="password"
                       value={formData.config_data?.api_credentials?.openai_api_key || ''}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        config_data: {
-                          ...formData.config_data,
-                          api_credentials: {
-                            ...formData.config_data.api_credentials,
-                            openai_api_key: e.target.value
-                          }
-                        }
-                      })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, config_data: { ...prev.config_data, api_credentials: { ...prev.config_data?.api_credentials, openai_api_key: e.target.value } } }))}
                       placeholder="Your OpenAI API key"
                     />
                   </div>
@@ -344,16 +342,7 @@ export function Configurations() {
                     <select 
                       className="w-full p-2 border rounded-md"
                       value={formData.config_data?.meeting_platforms?.preferred_platform || 'teams'}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        config_data: {
-                          ...formData.config_data,
-                          meeting_platforms: {
-                            ...formData.config_data.meeting_platforms,
-                            preferred_platform: e.target.value
-                          }
-                        }
-                      })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, config_data: { ...prev.config_data, meeting_platforms: { ...prev.config_data?.meeting_platforms, preferred_platform: e.target.value } } }))}
                     >
                       <option value="teams">Microsoft Teams</option>
                       <option value="google_meet">Google Meet</option>
@@ -365,16 +354,7 @@ export function Configurations() {
                       <Input
                         id="teams_app_id"
                         value={formData.config_data?.api_credentials?.teams_app_id || ''}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          config_data: {
-                            ...formData.config_data,
-                            api_credentials: {
-                              ...formData.config_data.api_credentials,
-                              teams_app_id: e.target.value
-                            }
-                          }
-                        })}
+                        onChange={(e) => setFormData(prev => ({ ...prev, config_data: { ...prev.config_data, api_credentials: { ...prev.config_data?.api_credentials, teams_app_id: e.target.value } } }))}
                         placeholder="Microsoft Teams App ID"
                       />
                     </div>
@@ -384,16 +364,7 @@ export function Configurations() {
                         id="teams_app_password"
                         type="password"
                         value={formData.config_data?.api_credentials?.teams_app_password || ''}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          config_data: {
-                            ...formData.config_data,
-                            api_credentials: {
-                              ...formData.config_data.api_credentials,
-                              teams_app_password: e.target.value
-                            }
-                          }
-                        })}
+                        onChange={(e) => setFormData(prev => ({ ...prev, config_data: { ...prev.config_data, api_credentials: { ...prev.config_data?.api_credentials, teams_app_password: e.target.value } } }))}
                         placeholder="Microsoft Teams App Password"
                       />
                     </div>
@@ -408,16 +379,7 @@ export function Configurations() {
                     <select 
                       className="w-full p-2 border rounded-md"
                       value={formData.config_data?.speech_processing?.preferred_provider || 'azure'}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        config_data: {
-                          ...formData.config_data,
-                          speech_processing: {
-                            ...formData.config_data.speech_processing,
-                            preferred_provider: e.target.value
-                          }
-                        }
-                      })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, config_data: { ...prev.config_data, speech_processing: { ...prev.config_data?.speech_processing, preferred_provider: e.target.value } } }))}
                     >
                       <option value="azure">Azure Speech Services</option>
                       <option value="google_cloud">Google Cloud Speech</option>
@@ -431,16 +393,7 @@ export function Configurations() {
                         id="azure_speech_key"
                         type="password"
                         value={formData.config_data?.api_credentials?.azure_speech_key || ''}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          config_data: {
-                            ...formData.config_data,
-                            api_credentials: {
-                              ...formData.config_data.api_credentials,
-                              azure_speech_key: e.target.value
-                            }
-                          }
-                        })}
+                        onChange={(e) => setFormData(prev => ({ ...prev, config_data: { ...prev.config_data, api_credentials: { ...prev.config_data?.api_credentials, azure_speech_key: e.target.value } } }))}
                         placeholder="Azure Speech Services key"
                       />
                     </div>
@@ -449,16 +402,7 @@ export function Configurations() {
                       <Input
                         id="azure_speech_region"
                         value={formData.config_data?.api_credentials?.azure_speech_region || ''}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          config_data: {
-                            ...formData.config_data,
-                            api_credentials: {
-                              ...formData.config_data.api_credentials,
-                              azure_speech_region: e.target.value
-                            }
-                          }
-                        })}
+                        onChange={(e) => setFormData(prev => ({ ...prev, config_data: { ...prev.config_data, api_credentials: { ...prev.config_data?.api_credentials, azure_speech_region: e.target.value } } }))}
                         placeholder="e.g., eastus"
                       />
                     </div>
@@ -471,19 +415,14 @@ export function Configurations() {
                   <Label>Employee Configuration (JSON)</Label>
                   <Textarea
                     className="h-40 font-mono text-sm"
-                    value={JSON.stringify(formData.config_data?.employees || {}, null, 2)}
+                    value={formData.config_data?.employees ? JSON.stringify(formData.config_data.employees, null, 2) : "{}"}
                     onChange={(e) => {
                       try {
-                        const employees = JSON.parse(e.target.value)
-                        setFormData({
-                          ...formData,
-                          config_data: {
-                            ...formData.config_data,
-                            employees
-                          }
-                        })
+                        const employeesData = JSON.parse(e.target.value);
+                        setFormData(prev => ({ ...prev, config_data: { ...prev.config_data, employees: employeesData } }));
                       } catch (error) {
-                        // Invalid JSON, don't update
+                        // Optionally provide feedback for invalid JSON
+                        console.warn("Invalid JSON for employees configuration");
                       }
                     }}
                     placeholder="Employee configuration in JSON format"
