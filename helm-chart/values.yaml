@@ -1,0 +1,141 @@
+# Default values for autonomous-meeting-assistant-chart
+replicaCount: 1
+
+image:
+  repository: autonomous-meeting-assistant
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: meeting-assistant.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Authentication configuration
+auth:
+  enabled: true
+  jwtSecret: "your-super-secret-jwt-key-change-in-production"
+  adminPassword: "admin123"
+  sessionTimeout: 3600
+
+# Database configuration
+database:
+  type: sqlite
+  path: "/data/meeting_assistant.db"
+  migrations: true
+  seedData: true
+
+# Email configuration for notifications
+email:
+  enabled: false
+  smtpHost: "smtp.gmail.com"
+  smtpPort: 587
+  smtpUsername: ""
+  smtpPassword: ""
+  fromAddress: "noreply@meeting-assistant.com"
+
+# API configuration
+api:
+  rateLimitRequests: 100
+  rateLimitWindow: 60
+  logLevel: "INFO"
+  corsOrigins: "*"
+
+# Storage configuration
+storage:
+  enabled: true
+  size: 10Gi
+  storageClass: ""
+  accessMode: ReadWriteOnce
+
+# Environment variables
+env:
+  - name: FLASK_ENV
+    value: "production"
+  - name: FLASK_DEBUG
+    value: "false"
+  - name: JWT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: auth-secret
+        key: jwt-secret
+  - name: ADMIN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: auth-secret
+        key: admin-password
+  - name: SESSION_TIMEOUT
+    value: "3600"
+  - name: RATE_LIMIT_REQUESTS
+    value: "100"
+  - name: RATE_LIMIT_WINDOW
+    value: "60"
+  - name: LOG_LEVEL
+    value: "INFO"
+  - name: CORS_ORIGINS
+    value: "*"
+
+# Frontend configuration
+frontend:
+  enabled: true
+  image:
+    repository: autonomous-meeting-assistant-frontend
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
