@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   backend:
+<<<<<<< HEAD
     build: ./agent_web_interface
     ports:
       - "5001:5001"
@@ -34,4 +35,59 @@ services:
 
 volumes:
   db_data:
+=======
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: meeting-assistant-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=false
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      - SESSION_TIMEOUT=${SESSION_TIMEOUT:-3600}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - DATABASE_PATH=/data/meeting_assistant.db
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+    volumes:
+      - meeting_data:/data
+    networks:
+      - meeting_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: meeting-assistant-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - meeting_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  meeting_data:
+    driver: local
+
+networks:
+  meeting_network:
+    driver: bridge
+>>>>>>> develop
 

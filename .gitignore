@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # node_modules
 node_modules/
 npm-debug.log*
@@ -76,4 +77,9 @@ coverage.xml
 .mypy_cache/
 .dmypy.json
 dmypy.json
+=======
+node_modules/
+.env
+
+>>>>>>> develop
 

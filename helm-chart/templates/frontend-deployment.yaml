@@ -1,0 +1,35 @@
+{{- if .Values.frontend.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "autonomous-meeting-assistant-chart.fullname" . }}-frontend
+  labels:
+    {{- include "autonomous-meeting-assistant-chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "autonomous-meeting-assistant-chart.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: frontend
+  template:
+    metadata:
+      labels:
+        {{- include "autonomous-meeting-assistant-chart.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.frontend.service.targetPort }}
+              protocol: TCP
+          env:
+            - name: REACT_APP_API_BASE_URL
+              value: "http://{{ include "autonomous-meeting-assistant-chart.fullname" . }}-backend:{{ .Values.service.port }}"
+          resources:
+            {{- toYaml .Values.frontend.resources | nindent 12 }}
+{{- end }}
+
