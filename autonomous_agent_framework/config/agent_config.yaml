@@ -1,0 +1,155 @@
+api_credentials:
+  jira_url: "https://your-company.atlassian.net"
+  jira_username: "your-email@company.com"
+  jira_token: "your-jira-api-token"
+  github_token: "your-github-token"
+  confluence_url: "https://your-company.atlassian.net/wiki"
+  confluence_username: "your-email@company.com"
+  confluence_token: "your-confluence-token"
+  slack_token: "your-slack-bot-token"
+  openai_api_key: "your-openai-api-key"
+
+employees:
+  vivek:
+    name: "Vivek Kumar"
+    employee_id: "vivek"
+    email: "vivek@company.com"
+    jira_username: "vivek.kumar"
+    github_username: "vivek-dev"
+    confluence_username: "vivek.kumar"
+    slack_user_id: "U1234567890"
+    projects:
+      - "PROJECT-A"
+      - "PROJECT-B"
+    teams:
+      - "backend-team"
+      - "platform-team"
+    role: "Senior Software Engineer"
+    manager: "sarah"
+  
+  sarah:
+    name: "Sarah Johnson"
+    employee_id: "sarah"
+    email: "sarah@company.com"
+    jira_username: "sarah.johnson"
+    github_username: "sarah-manager"
+    confluence_username: "sarah.johnson"
+    slack_user_id: "U0987654321"
+    projects:
+      - "PROJECT-A"
+      - "PROJECT-B"
+      - "PROJECT-C"
+    teams:
+      - "backend-team"
+      - "platform-team"
+      - "management"
+    role: "Engineering Manager"
+    manager: null
+  
+  alex:
+    name: "Alex Chen"
+    employee_id: "alex"
+    email: "alex@company.com"
+    jira_username: "alex.chen"
+    github_username: "alex-frontend"
+    confluence_username: "alex.chen"
+    slack_user_id: "U1122334455"
+    projects:
+      - "PROJECT-B"
+      - "PROJECT-D"
+    teams:
+      - "frontend-team"
+      - "ui-ux-team"
+    role: "Frontend Developer"
+    manager: "sarah"
+
+meeting_config:
+  max_response_length: 200
+  context_window_days: 7
+  auto_join_meetings: true
+  create_summaries: true
+  create_action_items: true
+  update_jira_tickets: true
+
+llm_model: "gpt-3.5-turbo"
+embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+log_level: "INFO"
+
+
+# Meeting platform configuration
+meeting_platforms:
+  preferred_platform: "teams"
+  enabled_platforms: ["teams", "google_meet"]
+  
+  teams:
+    app_id: "your_teams_app_id"
+    app_password: "your_teams_app_password"
+    tenant_id: "your_azure_tenant_id"
+    auto_join_scheduled_meetings: true
+    enable_chat_responses: true
+    enable_meeting_summaries: true
+  
+  google_meet:
+    use_headless_browser: true
+    browser_timeout: 30
+    auto_disable_camera: true
+    auto_disable_microphone: true
+    enable_chat_responses: true
+  
+  general:
+    max_concurrent_meetings: 3
+    meeting_timeout_minutes: 120
+    auto_leave_empty_meetings: true
+    enable_meeting_recording: false
+
+# Speech processing configuration
+speech_processing:
+  preferred_provider: "azure"
+  enabled_providers: ["azure", "google_cloud", "whisper"]
+  enable_fallback: true
+  
+  real_time:
+    chunk_duration_seconds: 30
+    enable_partial_results: true
+    enable_speaker_diarization: true
+    max_speakers: 8
+  
+  quality:
+    sample_rate: 16000
+    audio_format: "wav"
+    enable_noise_reduction: true
+    confidence_threshold: 0.7
+  
+  azure:
+    language: "en-US"
+    enable_dictation: true
+    enable_profanity_filter: false
+  
+  google_cloud:
+    language: "en-US"
+    model: "latest_long"
+    use_enhanced: true
+    enable_automatic_punctuation: true
+  
+  whisper:
+    model: "whisper-1"
+    response_format: "verbose_json"
+    enable_translation: false
+    chunk_duration_seconds: 30
+
+# Additional API credentials for new integrations
+api_credentials:
+  # Existing credentials...
+  
+  # Teams integration
+  teams_app_id: "your_teams_app_id"
+  teams_app_password: "your_teams_app_password"
+  teams_tenant_id: "your_azure_tenant_id"
+  
+  # Speech-to-text services
+  azure_speech_key: "your_azure_speech_key"
+  azure_speech_region: "eastus"
+  google_speech_credentials_path: "path/to/google_credentials.json"
+  google_cloud_project_id: "your_google_project_id"
+  openai_api_key: "your_openai_api_key"
+

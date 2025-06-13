@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./agent_web_interface
+    ports:
+      - "5001:5001"
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=sqlite:///agent_framework.db
+    volumes:
+      - ./agent_web_interface:/app
+      - ./autonomous_agent_framework:/app/autonomous_agent_framework
+    depends_on:
+      - db
+
+  frontend:
+    build: ./agent-dashboard
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_API_URL=http://localhost:5001/api
+    volumes:
+      - ./agent-dashboard:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+  db:
+    image: sqlite:latest
+    volumes:
+      - db_data:/data
+
+volumes:
+  db_data:
+

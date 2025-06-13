@@ -1,0 +1,66 @@
+# Core framework dependencies
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.0
+python-dotenv==1.0.0
+
+# LLM and AI dependencies
+langchain==0.0.350
+langchain-openai==0.0.2
+openai==1.3.7
+tiktoken==0.5.2
+
+# API connectors
+jira==3.5.2
+PyGithub==1.59.1
+requests==2.31.0
+beautifulsoup4==4.12.2
+slack-sdk==3.26.1
+
+# Data processing and storage
+pandas==2.1.4
+numpy==1.25.2
+python-dateutil==2.8.2
+
+# Configuration and utilities
+pyyaml==6.0.1
+click==8.1.7
+rich==13.7.0
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
+
+# Optional: Vector embeddings for RAG
+sentence-transformers==2.2.2
+chromadb==0.4.18
+
+# Scheduling
+schedule==1.2.0
+croniter==2.0.1
+
+
+# Meeting platform integrations
+botbuilder-core>=4.15.0
+botbuilder-schema>=4.15.0
+botbuilder-adapter-teams>=1.0.0
+microsoft-graph-core>=0.2.2
+microsoft-graph-auth>=0.2.0
+selenium>=4.15.0
+webdriver-manager>=4.0.0
+
+# Speech-to-text integrations
+azure-cognitiveservices-speech>=1.34.0
+google-cloud-speech>=2.21.0
+openai>=1.3.0
+
+# Audio processing
+pyaudio>=0.2.11
+wave>=0.0.2
+pydub>=0.25.1
+
+# Additional utilities
+python-dotenv>=1.0.0
+asyncio-mqtt>=0.13.0
+

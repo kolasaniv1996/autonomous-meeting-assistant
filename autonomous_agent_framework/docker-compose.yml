@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  autonomous-agent:
+    build: .
+    container_name: autonomous-agent-framework
+    environment:
+      # API Credentials (override in .env file)
+      - JIRA_URL=${JIRA_URL}
+      - JIRA_USERNAME=${JIRA_USERNAME}
+      - JIRA_TOKEN=${JIRA_TOKEN}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - CONFLUENCE_URL=${CONFLUENCE_URL}
+      - CONFLUENCE_USERNAME=${CONFLUENCE_USERNAME}
+      - CONFLUENCE_TOKEN=${CONFLUENCE_TOKEN}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      
+      # Framework Configuration
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LLM_MODEL=${LLM_MODEL:-gpt-3.5-turbo}
+      
+    volumes:
+      # Mount configuration directory
+      - ./config:/app/config:ro
+      
+      # Mount data directory for persistence
+      - agent_data:/app/data
+      
+      # Mount logs directory
+      - ./logs:/app/logs
+      
+    ports:
+      # Expose port for future web interface
+      - "8000:8000"
+      
+    restart: unless-stopped
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Redis for caching (uncomment if needed)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: autonomous-agent-redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   restart: unless-stopped
+
+volumes:
+  agent_data:
+    driver: local
+  # redis_data:
+  #   driver: local
+
+networks:
+  default:
+    name: autonomous-agent-network
+
