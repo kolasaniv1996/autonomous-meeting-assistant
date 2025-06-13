@@ -329,3 +329,14 @@ For support and questions:
 - Advanced meeting scheduling
 - Integration with more platforms
 
+
+
+## 🚀 Kubernetes Deployment
+
+For detailed instructions on how to deploy this application to a Kubernetes cluster, including building Docker images, preparing Kubernetes manifests, and verifying the deployment, please refer to the [Kubernetes Deployment Guide](deployment_guide.md).
+
+### Accessing the Application
+
+Once deployed to Kubernetes, you can access the frontend dashboard through the Ingress. To find the URL, you can use `minikube service frontend-service --url` if you are using Minikube, or check your Ingress Controller's external IP/hostname for other Kubernetes clusters.
+
+
